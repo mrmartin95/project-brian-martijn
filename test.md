@@ -1,10 +1,11 @@
 tekst
 **gobigorgohome\n**hb
 
-test<p>
+test< p >
 DIT GAAT LEKKER ZO
 
 
 <TEST>
   
 TEST
+  <i class="icon-file"></i>
