@@ -8,4 +8,4 @@ DIT GAAT LEKKER ZO
 <TEST>
   
 TEST
-  <i class="icon-file"></i>
+  <i class="icon-file"></i> voeg een doc toe
