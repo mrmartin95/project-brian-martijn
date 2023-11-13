@@ -1,0 +1,116 @@
+<script>
+        function zoekOrdernummer() {
+            var ordernummer = document.getElementById('ordernummer').value;
+            google.script.run.withSuccessHandler(toonOrderGegevens).haalOrderGegevensOp(ordernummer);
+            google.script.run.withSuccessHandler(verwerkControleResultaat).controleerOrdernummer(ordernummer);
+        }
+    
+        function toonOrderGegevens(gegevens) {
+            if (gegevens) {
+                var resultaatContainer = document.getElementById('resultaatContainer');
+                resultaatContainer.innerHTML =
+                    '<p><strong>Klantnaam:</strong> ' + gegevens.klantnaam + '</p>' +
+                    '<p><strong>Adres:</strong> ' + gegevens.adres + '</p>' +
+                    '<p><strong>Plaats:</strong> ' + gegevens.plaats + '</p>';
+                resultaatContainer.style.display = 'block';
+            } else {
+                // Voeg hier code toe voor het geval er geen gegevens worden gevonden
+            }
+        }
+
+        function verwerkControleResultaat(response) {
+            console.log("Response ontvangen:", response);
+            if (!response) {
+                console.error("Geen respons ontvangen van controleerOrdernummer");
+                return;
+            }
+
+            if (response.bestaat && response.status === "Zeker") {
+                alert("De bezorgdatum voor dit ordernummer staat al definitief vast. Neem contact op met de winkel voor wijzigingen.");
+                return;
+            }
+
+            var keuzeContainer = document.getElementById('keuzeContainer');
+            var bezorgdatumContainer = document.getElementById('bezorgdatumContainer');
+
+            if (response.bestaat) {
+                document.getElementById('huidigeDatum').textContent = response.datum;
+                document.getElementById('huidigDagdeel').textContent = response.dagdeel;
+                keuzeContainer.style.display = 'block';
+                bezorgdatumContainer.style.display = 'none';
+            } else {
+                keuzeContainer.style.display = 'none';
+                bezorgdatumContainer.style.display = 'block';
+            }
+        }
+
+        function aanpassen() {
+            var keuzeContainer = document.getElementById('keuzeContainer');
+            var bezorgdatumContainer = document.getElementById('bezorgdatumContainer');
+
+            keuzeContainer.style.display = 'none';
+            bezorgdatumContainer.style.display = 'block';
+        }
+
+        function indienen() {
+            var ordernummer = document.getElementById('ordernummer').value;
+            var bezorgdatum = document.getElementById('bezorgdatum').value;
+            var dagdeel = document.getElementById('dagdeel').value;
+            var status = document.querySelector('input[name="status"]:checked').value;
+            google.script.run.verwerkGegevens(ordernummer, bezorgdatum, dagdeel, status);
+        }
+
+        function bevestigen() {
+            var ordernummer = document.getElementById('ordernummer').value;
+            var status = "Zeker"; // De status die u wilt instellen
+
+            google.script.run.updateStatus(ordernummer, status);
+        }
+
+        function toonInvoerveld(actie) {
+            if (actie === 'aanpassen') {
+                toonBestelnummersVoorAanpassing();
+            }
+            // Rest van de logica voor andere acties...
+        }
+
+
+        function toonBestelnummersVoorAanpassing() {
+            google.script.run.withSuccessHandler(function(bestelnummers) {
+                var container = document.getElementById('bestelnummerKnoppenContainer');
+                container.innerHTML = '';
+
+                bestelnummers.forEach(function(nummer) {
+                    var btn = document.createElement('button');
+                    btn.textContent = nummer;
+                    btn.onclick = function() { haalEnToonBestelgegevens(nummer); };
+                    container.appendChild(btn);
+                });
+
+                container.style.display = 'block';
+            }).haalBestelnummersOpVoorAanpassing();
+        }
+
+        function haalEnToonBestelgegevens(ordernummer) {
+            // Stel het ordernummer in het invoerveld in
+            document.getElementById('ordernummer').value = ordernummer;
+            aanpassingsmodus = true; // Zet de modus op 'aanpassen'
+            zoekOrdernummer(); // Deze functie moet rekening houden met 'aanpassingsmodus'
+            toonDatumInvoerveld();
+        }
+
+        function toonDatumInvoerveld() {
+            // Verberg de keuzeContainer als deze bestaat
+            var keuzeContainer = document.getElementById('keuzeContainer');
+            if (keuzeContainer) {
+                keuzeContainer.style.display = 'none';
+           }
+
+            // Toon het invoerveld voor de datum
+            var bezorgdatumContainer = document.getElementById('bezorgdatumContainer');
+            bezorgdatumContainer.style.display = 'block';
+        }
+    </script>
+</body>
+
+</html>
